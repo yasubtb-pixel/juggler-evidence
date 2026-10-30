@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#122138">
+  <meta name="description" content="ジャグラーのBB・RB・合算から、設定間の証拠の強さを比較するオフライン対応の分析アプリ。">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <title>ジャグラー・証拠の強さ</title>
+  <style>
+    :root { --bg:#f3f6f8;--paper:#fff;--ink:#18263a;--muted:#66758a;--line:#dfe6ed;--navy:#122138;--mint:#118c79;--mintsoft:#e4f5f0;--coral:#c46145;--coralsoft:#fff0eb;--shadow:0 5px 24px rgba(18,33,56,.055); }
+    *{box-sizing:border-box}
+    html{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;-webkit-text-size-adjust:100%}
+    body{background:var(--bg);color:var(--ink);margin:0;font-size:15px;line-height:1.55}
+    button,input,select{font:inherit}
+    button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+    button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid rgba(17,140,121,.32);outline-offset:2px}
+    .top{background:linear-gradient(124deg,#122138,#223955);color:#fff;padding:26px 17px 30px}
+    .top-inner{max-width:700px;margin:auto}
+    .eyebrow{letter-spacing:.12em;font-weight:700;text-transform:uppercase;font-size:11px;color:#a6eee1}
+    h1{font-size:24px;letter-spacing:-.04em;margin:6px 0 6px;font-weight:800}
+    .lead{font-size:12.5px;color:#d3dfed;margin:0;line-height:1.7}
+    .main{max-width:700px;margin:-14px auto 48px;padding:0 14px}
+    .panel{border:1px solid var(--line);background:var(--paper);border-radius:19px;box-shadow:var(--shadow);padding:18px;margin-bottom:13px}
+    .section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+    h2{font-size:16px;margin:0;font-weight:800;letter-spacing:-.02em}
+    .micro{font-size:11px;color:var(--muted)}
+    .seg{display:grid;grid-template-columns:1fr 1fr;gap:5px;background:#edf1f5;padding:5px;border-radius:13px}
+    .seg button{border:0;background:transparent;border-radius:10px;padding:11px 6px;color:#5c6e80;font-weight:700;font-size:14px}
+    .seg button.active{background:#fff;color:#15273e;box-shadow:0 1px 6px #0001}
+    .inputs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:15px}
+    label{font-weight:700;font-size:13px;display:block}
+    .inp{min-width:0}
+    .inp label{margin-bottom:6px}
+    input[type=number]{width:100%;border:1px solid #d2dde5;background:#fff;border-radius:11px;padding:11px 7px;font-size:21px;font-weight:800;text-align:center;min-width:0;color:var(--ink);font-variant-numeric:tabular-nums}
+    input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+    input[type=number]{-moz-appearance:textfield;appearance:textfield}
+    .tiny-buttons{display:flex;gap:5px;margin-top:6px}
+    .tiny-buttons button{width:50%;background:#edf2f6;border:0;border-radius:9px;padding:9px 3px;color:#2a4157;font-size:13px;font-weight:800}
+    .tiny-buttons button:active,.actions button:active{transform:scale(.98)}
+    .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}
+    .stat{background:#f4f7f9;border-radius:11px;padding:10px 6px;text-align:center}
+    .stat span{display:block;color:var(--muted);font-size:11px}
+    .stat strong{display:block;font-size:16px;font-variant-numeric:tabular-nums}
+    .compare{display:flex;align-items:end;gap:10px}
+    .select-col{flex:1;min-width:0}
+    select{width:100%;background:#f7f9fa;border:1px solid #d4dfe7;color:var(--ink);border-radius:11px;padding:12px 8px;font-weight:800;font-size:16px}
+    .vs{color:var(--muted);padding-bottom:12px;font-size:12px;font-weight:900}
+    .hero{background:linear-gradient(180deg,#f7fbfb,#f2f7f7);border:1px solid #d8e8e5;border-radius:17px;padding:20px 15px;text-align:center}
+    .hero.ab{background:linear-gradient(180deg,#fff9f6,#fdf3ef);border-color:#f3ddd1}
+    .hero.neutral{background:#f5f7f9;border-color:#e1e8ee}
+    .hero .topline{color:#516577;font-size:12px;font-weight:800;letter-spacing:.01em}
+    .hero .result{font-size:26px;line-height:1.35;font-weight:850;letter-spacing:-.04em;margin-top:5px}
+    .hero .ratio{font-size:49px;font-weight:900;line-height:1.22;letter-spacing:-.055em;font-variant-numeric:tabular-nums}
+    .hero .unit{font-size:20px;letter-spacing:0;margin-left:3px}
+    .strength{font-size:12px;color:#52667a;margin-top:8px}
+    .evidence-axis{padding:17px 5px 3px}
+    .axis-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);font-weight:800;margin-bottom:7px}
+    .axis{height:14px;border-radius:99px;background:linear-gradient(90deg,#ebc0b1 0%,#f2eeeb 47%,#e3e9ed 50%,#e7efed 53%,#9bcfc2 100%);position:relative}
+    .axis::after{content:"";height:22px;width:2px;background:#6f8296;position:absolute;left:50%;top:-4px;border-radius:3px}
+    .needle{position:absolute;top:-6px;width:6px;height:26px;transform:translateX(-50%);border-radius:4px;background:#162a41;border:2px solid #fff;box-shadow:0 1px 5px #0006;z-index:1;left:50%}
+    .ticks{display:flex;justify-content:space-between;margin-top:7px;color:#7b8b99;font-size:10px;font-variant-numeric:tabular-nums}
+    .breakdown{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .detail{border:1px solid var(--line);border-radius:13px;padding:13px 11px}
+    .detail .label{font-size:12px;color:#536477;font-weight:800}
+    .detail .detail-main{font-weight:900;font-size:18px;margin:6px 0 2px;font-variant-numeric:tabular-nums}
+    .detail .detail-sub{font-size:11px;color:var(--muted)}
+    .detail .note{font-size:11px;color:#526477;line-height:1.6;margin-top:7px}
+    .bodycopy{font-size:12px;color:#5b6d7f;margin:11px 0 0;line-height:1.75}
+    .scenarios{width:100%;border-collapse:collapse;font-size:13px}
+    .scenarios th{font-size:11px;color:#64768a;background:#f4f6f8;text-align:left;padding:9px 8px}
+    .scenarios td{padding:10px 8px;border-bottom:1px solid #edf0f3}
+    .scenarios tr:last-child td{border-bottom:0}
+    .scenarios tr.current td{background:#eaf7f2;font-weight:800}
+    .scenarios td:last-child{text-align:right;font-variant-numeric:tabular-nums;font-weight:750}
+    .scenarios th:last-child{text-align:right}
+    .pill{font-size:10px;background:#e6f0f9;color:#2b5570;padding:3px 5px;border-radius:6px;white-space:nowrap}
+    .actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+    .actions button{border:0;border-radius:11px;padding:11px 15px;font-size:13px;font-weight:800;background:#e8eef2;color:#23394f}
+    .actions button.primary{background:#173e4b;color:#fff;flex:1}
+    .footnote{font-size:11px;color:#6c7b88;margin:8px 1px;line-height:1.8}
+    .help-list{margin:0;padding-left:20px;color:#415469;font-size:13px;line-height:1.9}
+    .help-list li{margin-bottom:5px}
+    details{border:1px solid #dfe7ed;border-radius:12px;padding:12px 13px;margin-top:10px}
+    summary{font-weight:800;font-size:13px;cursor:pointer}
+    details p{color:#526277;font-size:12px;margin:10px 0 2px;line-height:1.8}
+    .history-item{padding:12px 0;border-bottom:1px solid #edf1f3;display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .history-item:last-child{border-bottom:0}
+    .history-item strong{display:block;font-size:13px}
+    .history-item small{display:block;color:#748399;font-size:11px;margin-top:2px}
+    .history-item button{background:#eef3f5;border:0;color:#244158;border-radius:10px;padding:8px 11px;font-weight:800;white-space:nowrap;font-size:12px}
+    .empty{font-size:12px;color:#7b8a9a;padding:12px 0}
+    .warn{background:#fff6ed;border:1px solid #f3d5be;border-radius:10px;color:#8d492d;padding:12px;font-size:12px;margin-top:12px}
+    .invisible{display:none!important}
+    .footer{text-align:center;font-size:11px;color:#8290a0;padding:0 14px 20px}
+    .toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:#17283b;color:white;font-size:12px;border-radius:30px;padding:10px 18px;box-shadow:0 5px 25px #0004;opacity:0;pointer-events:none;transition:opacity .2s;white-space:nowrap;z-index:100}
+    .toast.visible{opacity:1}
+    @media (max-width:380px){h1{font-size:22px}.panel{padding:14px}.inputs{gap:6px}input[type=number]{font-size:19px;padding:10px 4px}.hero .ratio{font-size:44px}.detail{padding:11px 8px}.detail .detail-main{font-size:16px}}
+    @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+  </style>
+</head>
+<body>
+<header class="top"><div class="top-inner">
+  <div class="eyebrow">JUGGLER / EVIDENCE LAB</div>
+  <h1>設定判別の「証拠の強さ」</h1>
+  <p class="lead">確率の箱を、少し冷静に見るための計算機。<br>設定確率ではなく「その結果がどちらで何倍起こりやすいか」を表示。</p>
+</div></header>
+<main class="main">
+  <section class="panel">
+    <div class="section-head"><h2>① 機種と実戦データ</h2><span class="micro">自動で再計算</span></div>
+    <div class="seg" role="group" aria-label="機種選択">
+      <button id="machineNeo" type="button" data-machine="neo" class="active" aria-pressed="true">ネオアイム</button>
+      <button id="machineGo" type="button" data-machine="go" aria-pressed="false">ゴーゴー3</button>
+    </div>
+    <div class="inputs">
+      <div class="inp"><label for="games">総G数</label><input id="games" type="number" inputmode="numeric" min="0" step="1" value="1000"><div class="tiny-buttons"><button type="button" data-delta="games:-100">−100</button><button type="button" data-delta="games:100">＋100</button></div></div>
+      <div class="inp"><label for="big">BB回数</label><input id="big" type="number" inputmode="numeric" min="0" step="1" value="5"><div class="tiny-buttons"><button type="button" data-delta="big:-1">−1</button><button type="button" data-delta="big:1">＋1</button></div></div>
+      <div class="inp"><label for="reg">RB回数</label><input id="reg" type="number" inputmode="numeric" min="0" step="1" value="3"><div class="tiny-buttons"><button type="button" data-delta="reg:-1">−1</button><button type="button" data-delta="reg:1">＋1</button></div></div>
+    </div>
+    <div id="error" class="warn invisible" role="alert">G数は1以上、BB・RBは0以上の整数で、BB＋RBが総G数以下になるよう入力してね。</div>
+    <div class="stats" id="stats">
+      <div class="stat"><span>BB確率</span><strong id="bigRate">1/200.0</strong></div>
+      <div class="stat"><span>RB確率</span><strong id="regRate">1/333.3</strong></div>
+      <div class="stat"><span>合算</span><strong id="totalRate">1/125.0</strong></div>
+    </div>
+  </section>
+  <section class="panel">
+    <div class="section-head"><h2>② 比べる設定を選ぶ</h2><span class="micro">店の設定配分は不要</span></div>
+    <div class="compare">
+      <div class="select-col"><label for="setA">比較A</label><select id="setA"><option value="0" selected>設定①</option><option value="1">設定②</option><option value="2">設定③</option><option value="3">設定④</option><option value="4">設定⑤</option><option value="5">設定⑥</option></select></div>
+      <span class="vs">VS</span>
+      <div class="select-col"><label for="setB">比較B</label><select id="setB"><option value="0">設定①</option><option value="1">設定②</option><option value="2">設定③</option><option value="3" selected>設定④</option><option value="4">設定⑤</option><option value="5">設定⑥</option></select></div>
+    </div>
+    <p class="bodycopy">設定①と④が初期値。ほかの設定にも自由に切り替えられるよ。</p>
+  </section>
+  <section class="panel" aria-live="polite" aria-atomic="true">
+    <div class="section-head"><h2>③ 総合的な証拠</h2><span class="micro">BB＋RB＋非当選G</span></div>
+    <div class="hero neutral" id="hero">
+      <div class="topline" id="heroTitle">比較結果</div>
+      <div class="result" id="favored">―</div>
+      <div class="ratio"><span id="factor">1.00</span><span class="unit">倍</span></div>
+      <div class="strength" id="strength">―</div>
+    </div>
+    <div class="evidence-axis">
+      <div class="axis-labels"><span id="aSide">①を支持</span><span>1倍＝同程度</span><span id="bSide">④を支持</span></div>
+      <div class="axis"><div class="needle" id="needle"></div></div>
+      <div class="ticks"><span>20倍以上</span><span>5倍</span><span>1倍</span><span>5倍</span><span>20倍以上</span></div>
+    </div>
+    <p class="bodycopy" id="resultText"></p>
+  </section>
+  <section class="panel">
+    <div class="section-head"><h2>④ 証拠の内訳</h2><span class="micro">重複計上なし</span></div>
+    <div class="breakdown">
+      <div class="detail"><div class="label">合算回数による証拠</div><div class="detail-main" id="combinedEvidence">―</div><div class="detail-sub" id="combinedDirection">―</div><div class="note">G数に対するボーナス総回数。BBとRBをまとめた頻度の情報。</div></div>
+      <div class="detail"><div class="label">BB・RB構成による証拠</div><div class="detail-main" id="compositionEvidence">―</div><div class="detail-sub" id="compositionDirection">―</div><div class="note">当たったボーナスの内訳。RBが占める割合の情報。</div></div>
+    </div>
+    <p class="bodycopy">この2つの倍率（向き付き）を掛け合わせると総合倍率になる。合算とRBを別々に加点しているわけではないよ。</p>
+  </section>
+  <section class="panel">
+    <div class="section-head"><h2>⑤ RBが1〜2回違ったら？</h2><span class="micro">感度チェック</span></div>
+    <table class="scenarios"><thead><tr><th>RBの仮定</th><th>支持する設定</th><th>証拠倍率</th></tr></thead><tbody id="scenarioRows"></tbody></table>
+    <p class="bodycopy">総G数とBB数は固定し、RBだけを増減させた仮想比較。RBが1回変わるだけで結論が逆転するなら、結果は慎重に受け止めよう。</p>
+    <div class="actions"><button type="button" class="primary" id="saveBtn">この結果を履歴に保存</button><button type="button" id="resetBtn">初期値に戻す</button></div>
+  </section>
+  <section class="panel">
+    <div class="section-head"><h2>保存した履歴</h2><span class="micro" id="historyCount">0件</span></div>
+    <div id="history"><div class="empty">保存した結果はまだないよ。</div></div>
+    <div class="actions"><button type="button" id="exportBtn">CSVで書き出す</button><button type="button" id="clearBtn">履歴を全削除</button></div>
+    <p class="bodycopy">この端末・ブラウザ内にのみ保存する。サーバー送信なし。ブラウザのデータ削除で消える場合があるよ。</p>
+  </section>
+  <section class="panel">
+    <h2>見方と注意点</h2>
+    <ul class="help-list">
+      <li><b>1.00倍付近</b>：どちらの設定でも同程度に起こる。設定が「当たっている」意味ではない。</li>
+      <li><b>倍率が大きい</b>：指定した2設定のうち片方を支持する。ただし実設定の確率ではない。</li>
+      <li><b>合算の内訳</b>：設定差が小さければ、回数が多くても判別材料として弱いことがある。</li>
+      <li><b>設定配分・ブドウ・朝の根拠</b>：この比較には含まれない。続行・撤退や期待時給を自動判定するものではない。</li>
+    </ul>
+    <details><summary>計算の仕組み（少し詳しく）</summary>
+      <p>1Gごとの結果を「BB・RB・その他」の3区分とする多項モデル。各設定のBB・RB確率を使い、観測されたG・BB・RBの尤度比 L(B)/L(A) を計算する。確率の独立抽選と固定設定を仮定した近似モデルだよ。</p>
+      <p>合算成分は「総ボーナス回数 K」の二項尤度比。構成成分は「ボーナスK回のうちRBがR回」の条件付き二項尤度比。両成分の積が、総合尤度比に正確に一致する。</p>
+      <p>「差の大きさ」の表示は便宜的な目安で、統計的な信頼度・正解率・設定判定基準ではない。0Gの場合や比較設定が同じ場合は判別しない。</p>
+    </details>
+    <details><summary>採用した機種スペック</summary><p id="specText"></p></details>
+    <details><summary>iPhoneのホーム画面に置きたい</summary>
+      <p>GitHub PagesなどのHTTPSサイトとして公開した後、iPhoneのSafariで開き「共有」→「ホーム画面に追加」。初回読み込み後はオフラインでも使える構成。HTMLファイルを直接開くだけでも計算できるけど、ホーム画面アプリ化はHTTPS公開がおすすめ。</p>
+    </details>
+  </section>
+  <p class="footnote">本ツールは設定予測を保証しない。確率は公表・解析値の丸めを使用。過去の負けやハマリは次回の当選確率を変えない。実戦判断は投資上限や時間も含めて別途行ってね。</p>
+</main>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<div class="footer">JUGGLER EVIDENCE LAB · v1.0 · OFFLINE FIRST</div>
+<script>
+(()=>{'use strict';
+  const DATA={
+    neo:{name:'ネオアイムジャグラーEX',bb:[273.1,269.7,269.7,259.0,259.0,255.0],rb:[439.8,399.6,331.0,315.1,255.0,255.0]},
+    go:{name:'ゴーゴージャグラー3',bb:[259.0,258.0,257.0,254.0,247.3,234.9],rb:[354.2,332.7,306.2,268.6,247.3,234.9]}
+  };
+  const mark=['①','②','③','④','⑤','⑥'];
+  const el=id=>document.getElementById(id);
+  const STORAGE='juggler_evidence_v1';
+  const HISTORY='juggler_evidence_history_v1';
+  const getStorage=(key,fall)=>{try{const v=localStorage.getItem(key);return v?JSON.parse(v):fall}catch{return fall}};
+  const setStorage=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value))}catch{}};
+  let state=Object.assign({machine:'neo',games:'1000',big:'5',reg:'3',a:0,b:3},getStorage(STORAGE,{}));
+  let history=getStorage(HISTORY,[]);if(!Array.isArray(history))history=[];
+  let result=null;
+  function readInputs(){state.games=el('games').value;state.big=el('big').value;state.reg=el('reg').value;state.a=+el('setA').value;state.b=+el('setB').value;}
+  function syncInputs(){el('games').value=state.games;el('big').value=state.big;el('reg').value=state.reg;el('setA').value=String(state.a);el('setB').value=String(state.b);document.querySelectorAll('[data-machine]').forEach(btn=>{const yes=btn.dataset.machine===state.machine;btn.classList.toggle('active',yes);btn.setAttribute('aria-pressed',String(yes))})}
+  function valid(){const values=[state.games,state.big,state.reg].map(x=>x.trim());if(values.some(x=>x===''||!/^\d+$/.test(x)))return false;const [g,b,r]=values.map(Number);return Number.isSafeInteger(g)&&Number.isSafeInteger(b)&&Number.isSafeInteger(r)&&g>0&&g<=1e9&&b+r<=g}
+  function logLike(n,bb,rb,a,b){const d=DATA[state.machine];const paB=1/d.bb[a],paR=1/d.rb[a],pbB=1/d.bb[b],pbR=1/d.rb[b];const k=bb+rb;
+    const totalA=paB+paR,totalB=pbB+pbR;
+    const logTotal=k*Math.log(totalB/totalA)+(n-k)*Math.log((1-totalB)/(1-totalA));
+    const logSplit=bb*Math.log((pbB/totalB)/(paB/totalA))+rb*Math.log((pbR/totalB)/(paR/totalA));
+    return {logTotal,logSplit,logOverall:logTotal+logSplit};
+  }
+  function num(x){if(x>1e12)return x.toExponential(2);if(x>=1000)return Math.round(x).toLocaleString('ja-JP');if(x>=100)return x.toFixed(0);if(x>=10)return x.toFixed(1);return x.toFixed(2)}
+  function ratio(log){const abs=Math.abs(log);return abs<1e-12?'1.00':num(Math.exp(Math.min(abs,700)))}
+  function favor(log){return Math.abs(log)<1e-8?'ほぼ同等':`設定${mark[log>0?state.b:state.a]}寄り`}
+  function direction(log){return Math.abs(log)<1e-8?'ほぼ同程度':`設定${mark[log>0?state.b:state.a]}を支持`}
+  function strength(log){const x=Math.abs(log);if(x<Math.log(1.3))return '差はごく小さい（判別しにくい）';if(x<Math.log(2))return '差は小さい（判別材料は弱い）';if(x<Math.log(5))return '差はあるが、確定ではない';if(x<Math.log(10))return '比較的大きな差がある';return '強い差がある（ただし設定確率ではない）'}
+  function displayRate(n,k){return k>0?'1/'+(n/k).toFixed(1):'―'}
+  function fill(){
+    syncInputs();
+    const ok=valid()&&state.a!==state.b;
+    el('error').classList.toggle('invisible',ok);
+    el('error').textContent=state.a===state.b?'異なる2つの設定を選んでね。':'G数は1以上、BB・RBは0以上の整数で、BB＋RBが総G数以下になるよう入力してね。';
+    for(const id of ['stats','saveBtn'])el(id).style.opacity=ok?'1':'.5';
+    const n=Number(state.games),bb=Number(state.big),rb=Number(state.reg);
+    el('bigRate').textContent=ok?displayRate(n,bb):'―';el('regRate').textContent=ok?displayRate(n,rb):'―';el('totalRate').textContent=ok?displayRate(n,bb+rb):'―';
+    el('aSide').textContent=mark[state.a]+'を支持';el('bSide').textContent=mark[state.b]+'を支持';
+    const dd=DATA[state.machine];el('specText').innerHTML=dd.bb.map((v,i)=>`設定${mark[i]}　BB 1/${v.toFixed(1)} ／ RB 1/${dd.rb[i].toFixed(1)}`).join('<br>')+'<br>出典：機種解析の設定別ボーナス確率。';
+    if(!ok){result=null;el('heroTitle').textContent='入力値を確認';el('favored').textContent='判別できない';el('factor').textContent='―';el('strength').textContent='―';el('hero').className='hero neutral';el('needle').style.left='50%';el('resultText').textContent='比較が成立するとここに結果が表示されるよ。';for(const id of ['combinedEvidence','compositionEvidence','combinedDirection','compositionDirection'])el(id).textContent='―';el('scenarioRows').innerHTML='';el('saveBtn').disabled=true;return}
+    el('saveBtn').disabled=false;
+    result=logLike(n,bb,rb,state.a,state.b);const L=result.logOverall;
+    el('heroTitle').textContent=`設定${mark[state.a]} と 設定${mark[state.b]} の比較`;
+    el('favored').textContent=favor(L);el('factor').textContent=ratio(L);el('strength').textContent=strength(L);
+    el('hero').className='hero '+(Math.abs(L)<Math.log(1.3)?'neutral':L>0?'':'ab');
+    const pct=50+50*Math.max(-1,Math.min(1,L/Math.log(20)));
+    el('needle').style.left=`${pct}%`;
+    el('resultText').textContent=`同じ「${n.toLocaleString('ja-JP')}G・BB${bb}回・RB${rb}回」は、${Math.abs(L)<1e-8?'比較した2設定でほぼ同程度に':`設定${mark[L>0?state.b:state.a]}で約${ratio(L)}倍`}起こりやすい。これは店の設定配分を使わない証拠の比較で、実設定の確率ではない。`;
+    el('combinedEvidence').textContent=ratio(result.logTotal)+'倍';el('combinedDirection').textContent=direction(result.logTotal);
+    el('compositionEvidence').textContent=ratio(result.logSplit)+'倍';el('compositionDirection').textContent=direction(result.logSplit);
+    const tbody=el('scenarioRows');tbody.innerHTML='';
+    for(let diff=-2;diff<=2;diff++){const r=rb+diff;if(r<0||r+bb>n)continue;const t=logLike(n,bb,r,state.a,state.b),tr=document.createElement('tr');if(diff===0)tr.className='current';
+      const desc=diff===0?`現在 ${r}回`:diff>0?`＋${diff}回 → ${r}回`:`${diff}回 → ${r}回`;
+      const who=favor(t.logOverall);
+      tr.innerHTML=`<td>${desc} ${diff===0?'<span class="pill">実測</span>':''}</td><td>${who}</td><td>${ratio(t.logOverall)}倍</td>`;
+      tbody.append(tr);
+    }
+    setStorage(STORAGE,state);
+  }
+  let toastTimer=0;
+  function toast(str){const t=el('toast');t.textContent=str;t.classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('visible'),2200)}
+  function save(){if(!result)return;const now=new Date();history.unshift({time:now.toISOString(),machine:state.machine,games:Number(state.games),big:Number(state.big),reg:Number(state.reg),a:state.a,b:state.b,log:result.logOverall});history=history.slice(0,40);setStorage(HISTORY,history);drawHistory();toast('履歴に保存したよ')}
+  function drawHistory(){el('historyCount').textContent=history.length+'件';const h=el('history');h.innerHTML='';if(!history.length){h.innerHTML='<div class="empty">保存した結果はまだないよ。</div>';return}history.forEach((e,i)=>{const d=document.createElement('div');d.className='history-item';const date=new Date(e.time);const when=isNaN(date.getTime())?'':date.toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});const left=document.createElement('div');const title=document.createElement('strong');title.textContent=(e.machine==='neo'?'ネオ':'ゴー3')+` ${e.games}G ${e.big}-${e.reg}`;const sub=document.createElement('small');sub.textContent=`${when} / ${mark[e.a]} vs ${mark[e.b]} / ${Math.abs(e.log)<1e-8?'同程度':mark[e.log>0?e.b:e.a]+'寄り'} ${ratio(e.log)}倍`;left.append(title,sub);const btn=document.createElement('button');btn.type='button';btn.textContent='呼び出す';btn.addEventListener('click',()=>{state={machine:e.machine,games:String(e.games),big:String(e.big),reg:String(e.reg),a:e.a,b:e.b};fill();window.scrollTo({top:0,behavior:'smooth'});toast('記録を呼び出したよ')});d.append(left,btn);h.append(d)})}
+  function csvEscape(x){return '"'+String(x??'').replaceAll('"','""')+'"'}
+  function exportCsv(){if(!history.length){toast('書き出す履歴がないよ');return}const rows=[['保存日時','機種','G数','BB','RB','比較A','比較B','支持設定','倍率'],...history.map(h=>[new Date(h.time).toLocaleString('ja-JP'),h.machine==='neo'?'ネオアイム':'ゴーゴー3',h.games,h.big,h.reg,h.a+1,h.b+1,Math.abs(h.log)<1e-8?'同程度':h.log>0?h.b+1:h.a+1,ratio(h.log)])];const csv='\uFEFF'+rows.map(x=>x.map(csvEscape).join(',')).join('\r\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const link=document.createElement('a');link.href=url;link.download='juggler_evidence_history.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+  for(const id of ['games','big','reg','setA','setB'])el(id).addEventListener('input',()=>{readInputs();fill()});
+  document.querySelectorAll('[data-machine]').forEach(btn=>btn.addEventListener('click',()=>{readInputs();state.machine=btn.dataset.machine;fill()}));
+  document.querySelectorAll('[data-delta]').forEach(btn=>btn.addEventListener('click',()=>{readInputs();const [key,d]=btn.dataset.delta.split(':');if(!/^\d+$/.test(state[key]))state[key]='0';state[key]=String(Math.max(0,Number(state[key])+Number(d)));fill()}));
+  el('resetBtn').addEventListener('click',()=>{state={machine:'neo',games:'1000',big:'5',reg:'3',a:0,b:3};fill();toast('初期値に戻したよ')});
+  el('saveBtn').addEventListener('click',save);el('exportBtn').addEventListener('click',exportCsv);
+  el('clearBtn').addEventListener('click',()=>{if(!history.length){toast('削除する履歴はないよ');return}if(confirm('保存した履歴をすべて削除する？')){history=[];setStorage(HISTORY,history);drawHistory();toast('履歴を削除したよ')}});
+  fill();drawHistory();
+  if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
+})();
+</script>
+</body></html>
